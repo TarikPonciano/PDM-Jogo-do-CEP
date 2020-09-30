@@ -280,6 +280,54 @@ public class ClienteTCP extends AppCompatActivity {
         //Método que vai atualizar os pings e pongs, usando post para evitar problemas com as threads
 
 
+        if (gameState==0 || gameState==2) {
+            cepJogador.post(new Runnable() {
+                @Override
+                public void run() {
+                    cepJogador.setEnabled(true);
+                }
+            });
+        }else{cepJogador.post(new Runnable() {
+            @Override
+            public void run() {
+                cepJogador.setEnabled(false);
+            }
+        });}
+
+        if (gameState==3){
+            buscarCep.post(new Runnable() {
+                @Override
+                public void run() {
+                    buscarCep.setEnabled(true);
+                }
+            });
+        }else{
+            buscarCep.post(new Runnable() {
+                @Override
+                public void run() {
+                    buscarCep.setEnabled(false);
+                }
+            });
+
+        }
+
+        if (gameState==3){
+            cepOponente.post(new Runnable() {
+                @Override
+                public void run() {
+                    cepOponente.setEnabled(true);
+                }
+            });
+        }else{
+            cepOponente.post(new Runnable() {
+                @Override
+                public void run() {
+                    cepOponente.setEnabled(false);
+                }
+            });
+
+        }
+
 
         Log.d("Teste", "GameState antes do post: "+gameState);
         estadoJogo.post(new Runnable() {

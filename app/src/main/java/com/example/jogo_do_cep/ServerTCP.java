@@ -16,12 +16,21 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URL;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class ServerTCP extends AppCompatActivity {
 
@@ -228,6 +237,54 @@ public class ServerTCP extends AppCompatActivity {
         //Método que vai atualizar os pings e pongs, usando post para evitar problemas com as threads
 
 
+        if (gameState==0 || gameState==2) {
+            cepJogador.post(new Runnable() {
+                @Override
+                public void run() {
+                    cepJogador.setEnabled(true);
+                }
+            });
+        }else{cepJogador.post(new Runnable() {
+            @Override
+            public void run() {
+                cepJogador.setEnabled(false);
+            }
+        });}
+
+        if (gameState==3){
+            buscarCep.post(new Runnable() {
+                @Override
+                public void run() {
+                    buscarCep.setEnabled(true);
+                }
+            });
+        }else{
+            buscarCep.post(new Runnable() {
+                @Override
+                public void run() {
+                    buscarCep.setEnabled(false);
+                }
+            });
+
+        }
+
+        if (gameState==3){
+            cepOponente.post(new Runnable() {
+                @Override
+                public void run() {
+                    cepOponente.setEnabled(true);
+                }
+            });
+        }else{
+            cepOponente.post(new Runnable() {
+                @Override
+                public void run() {
+                    cepOponente.setEnabled(false);
+                }
+            });
+
+        }
+
 
         Log.d("Teste", "GameState antes do post: "+gameState);
         estadoJogo.post(new Runnable() {
@@ -356,11 +413,49 @@ public class ServerTCP extends AppCompatActivity {
     public void mandarCepInicial(View v) {
 
         cepSalvo = cepJogador.getText().toString();
+
+
+
+
         if (gameState == 0 || gameState == 2) {
             Thread t = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     try {
+
+                        URL url = new URL("http://viacep.com.br/ws/"+cepSalvo+"/json/");
+                        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                        conn.setRequestMethod("GET");
+                        conn.setDoInput(true);
+                        conn.connect();
+
+                        String resposta[] = new String[1];
+                        int responseCode = conn.getResponseCode();
+
+                        if(responseCode == HttpsURLConnection.HTTP_OK){
+
+                            BufferedReader br = new BufferedReader(
+                                    new InputStreamReader(conn.getInputStream(),"utf-8")
+                            );
+                            StringBuilder response = new StringBuilder();
+                            String responseLine = null;
+                            while((responseLine = br.readLine()) != null){
+                                response.append((responseLine.trim()));
+                            }
+                            resposta[0] = response.toString();
+
+                            JSONObject respostaJSON = new JSONObject(resposta[0]);
+
+                            if (resposta[0].compareTo("{\"erro\": true}") == 0) {
+                                estadoJogo.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        estadoJogo.setText("Insira um CEP Válido");
+
+                                    }
+                                });
+                            }else{
+
                         if (socketOutput != null) {
 
                             socketOutput.writeUTF(cepSalvo);
@@ -380,8 +475,17 @@ public class ServerTCP extends AppCompatActivity {
                         } else {
                             //tvStatus.setText("Cliente Desconectado");
                             // btConectar.setEnabled(true);
+                        }}}
+                        else{
+                            estadoJogo.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    estadoJogo.setText("Request Invalido");
+
+                                }
+                            });
                         }
-                    } catch (IOException e) {
+                    } catch (IOException | JSONException e) {
                         e.printStackTrace();
                     }
                 }
