@@ -174,22 +174,41 @@ public class ServerTCP extends AppCompatActivity {
             continuarRodando = true;
             while (continuarRodando) {
                 result = fromClient.readUTF();
-                if (gameState==0 || gameState==1){
+                if (gameState==0){
                     if (result!=null) {
                         cepRecebido = result;
-                        gameState = 3;
-                      //  atualizarCep();
+                        gameState = 2;
+
                         atualizarStatus();
                     }
 
                 }else{
-                    if (result.compareTo("PING") == 0) {
-                        //enviar Pong
-                        pongs++;
-                        socketOutput.writeUTF("PONG");
-                        socketOutput.flush();
-                        atualizarStatus();
-                    }}
+                    if (gameState==1){
+                        if (result!=null) {
+                            cepRecebido = result;
+                            gameState = 3;
+
+                            atualizarStatus();
+                        }
+
+
+                    }
+                    else{if (gameState==4){
+                        if (result.compareTo("Acertei")==0) {
+
+                            gameState = 6;
+
+                            atualizarStatus();
+                        }
+                        if (result.compareTo("Errei")==0){
+                            gameState = 3;
+                            atualizarStatus();
+                        }
+
+                    }
+                    }
+                }
+
             }
 
             Log.v("SMD", result);
@@ -208,29 +227,9 @@ public class ServerTCP extends AppCompatActivity {
     public void atualizarStatus() {
         //Método que vai atualizar os pings e pongs, usando post para evitar problemas com as threads
 
-        if(gameState==0||gameState==2){
 
 
-            definirCep.setEnabled(true);
-            cepJogador.setEnabled(true);
-        }
-        else{
-            definirCep.setEnabled(false); cepJogador.setEnabled(false);
-            if(gameState==1){
-
-            }else if(gameState==3){
-
-                cepOponente.setEnabled(true);
-                buscarCep.setEnabled(true);
-            }else if(gameState==4){
-
-                cepOponente.setEnabled(false);
-                buscarCep.setEnabled(false);
-
-            }
-
-        }
-
+        Log.d("Teste", "GameState antes do post: "+gameState);
         estadoJogo.post(new Runnable() {
             @Override
             public void run() {
@@ -245,9 +244,7 @@ public class ServerTCP extends AppCompatActivity {
                     if(gameState==1){
                         estadoJogo.setText("Aguardando oponente inserir posição");
                     }else{
-                        if (cepRecebido!=""){
-                            String subCepRecebido = cepRecebido.substring(2);
-                            cepOponente.setText(subCepRecebido);}
+
 
                         if(gameState==3){
                             estadoJogo.setText("É a sua vez");
@@ -256,41 +253,205 @@ public class ServerTCP extends AppCompatActivity {
                             estadoJogo.setText("Aguardando o turno do Oponente");
 
 
+                        }else{ if (gameState==5){
+                            estadoJogo.setText("Você Venceu!!!");
+
+                        }else{if (gameState==6){
+                            estadoJogo.setText("Você Perdeu :(");
+                        }
                         }
 
+                        }
                         }}}
 
             }
         });
 
+        Log.i("Teste", "GameState final atualizar: "+gameState);
+
+        if (cepRecebido!=""&&(gameState==3||gameState==4)){
+            cepCorreto.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    String subCepRecebido = cepRecebido.substring(3);
+                                    cepCorreto.setText(subCepRecebido);}
+                            }
+            );}
+
+        if (!(gameState==0||gameState==2)){
+            definirCep.post(new Runnable() {
+                @Override
+                public void run() {
+                    definirCep.setEnabled(false);
+                }
+            });
+        }
+
+        if (gameState==4){
+            if (cepRecente != ""){
+                ultimoCep.post(new Runnable(){
+                    @Override
+                    public void run(){
+                        String cepComplemento = cepCorreto.getText().toString();
+                        ultimoCep.setText("Último Cep Escolhido: " + cepRecente+cepComplemento);
+                    }
+
+                });
+            }
+            buscarCep.post(new Runnable(){
+                @Override
+                public void run(){
+                    buscarCep.setEnabled(false);
+                }
+
+            });
+        }else{if(gameState==3){
+            buscarCep.post(new Runnable(){
+                @Override
+                public void run(){
+                    buscarCep.setEnabled(true);
+                }
+
+            });} else{if(gameState==5||gameState==6){
+            buscarCep.post(new Runnable(){
+                @Override
+                public void run(){
+                    buscarCep.setEnabled(false);
+                }
+
+            });
+        }
+        }
+        }
+        if (gameState==4){
+            String cepFinal = cepOponente.getText().toString() + cepCorreto.getText().toString();
+            final int cepAtual = Integer.parseInt(cepFinal);
+            final int cepComparar = Integer.parseInt(cepRecebido);
+
+            estadoCep.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (cepAtual>cepComparar){
+                        estadoCep.setText("O Cep correto é menor que o inserido!");
+                    }
+                    else{estadoCep.setText("O Cep correto é maior que o inserido!");}
+                }
+
+
+            });} else{ if (gameState==5||gameState==6){
+
+                estadoCep.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        estadoCep.setText("Jogo finalizado!");
+                    }
+                });
+
+            }
+        }
+
 
     }
 
-    public void mandarCepInicial(View v){
+    public void mandarCepInicial(View v) {
 
         cepSalvo = cepJogador.getText().toString();
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if (socketOutput!=null) {
+        if (gameState == 0 || gameState == 2) {
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (socketOutput != null) {
 
-                        socketOutput.writeUTF(cepSalvo);
-                        socketOutput.flush();
-                        atualizarStatus();
-                    }else{
-                        tvStatus.setText("Cliente Desconectado");
-                        //btConectar.setEnabled(true);
+                            socketOutput.writeUTF(cepSalvo);
+                            socketOutput.flush();
+
+                            if (gameState == 0) {
+                                gameState = 1;
+                            } else {
+                                if (gameState == 2) {
+                                    gameState = 3;
+                                }
+                            }
+
+                            Log.i("Teste", "GameState envio cep: " + gameState);
+
+                            atualizarStatus();
+                        } else {
+                            //tvStatus.setText("Cliente Desconectado");
+                            // btConectar.setEnabled(true);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
-            }
-        });
-        t.start();
-
-
-
+            });
+            t.start();
+        }
     }
+
+    public void buscarCep(View v) {
+
+        if (gameState == 3) {
+
+            cepRecente = cepOponente.getText().toString();
+
+           String cepFinal = cepRecente + cepCorreto.getText().toString();
+
+            if (cepRecebido.compareTo(cepFinal)==0) {
+                Thread t = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if (socketOutput != null) {
+
+                                socketOutput.writeUTF("Acertei");
+                                socketOutput.flush();
+
+                                gameState = 5;
+
+                                Log.i("Teste", "GameState envio cep: " + gameState);
+
+                                atualizarStatus();
+                            } else {
+                                //tvStatus.setText("Cliente Desconectado");
+                                // btConectar.setEnabled(true);
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+                t.start();
+
+            } else {
+                Thread t = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if (socketOutput != null) {
+
+                                socketOutput.writeUTF("Errei");
+                                socketOutput.flush();
+
+                                gameState = 4;
+
+                                Log.i("Teste", "GameState envio cep: " + gameState);
+
+                                atualizarStatus();
+                            } else {
+                                //tvStatus.setText("Cliente Desconectado");
+                                // btConectar.setEnabled(true);
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+                t.start();
+            }
+        }
+    }
+
 
 }

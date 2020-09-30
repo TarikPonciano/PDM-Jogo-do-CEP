@@ -3,6 +3,7 @@ package com.example.jogo_do_cep;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -51,7 +52,7 @@ public class ClienteTCP extends AppCompatActivity {
         ultimoCep = findViewById(R.id.tvUltimoCep);
         logradouroCep = findViewById(R.id.tvLogradouroCep);
 
-        cepOponente.setEnabled(false);
+
         buscarCep.setEnabled(false);
 
 
@@ -62,66 +63,6 @@ public class ClienteTCP extends AppCompatActivity {
         atualizarStatus();
     }
 
-    public void atualizarStatus() {
-        //Método que vai atualizar os pings e pongs, usando post para evitar problemas com as threads
-
-        if(gameState==0||gameState==2){
-
-
-            definirCep.setEnabled(true);
-            cepJogador.setEnabled(true);
-        }
-        else{
-            definirCep.setEnabled(false); cepJogador.setEnabled(false);
-            if(gameState==1){
-
-            }else if(gameState==3){
-
-                cepOponente.setEnabled(true);
-                buscarCep.setEnabled(true);
-            }else if(gameState==4){
-
-                cepOponente.setEnabled(false);
-                buscarCep.setEnabled(false);
-
-            }
-
-        }
-
-        estadoJogo.post(new Runnable() {
-            @Override
-            public void run() {
-
-                if(gameState==0||gameState==2){
-
-                    estadoJogo.setText("Insira a posição da máquina do tempo");
-
-                }
-                else{
-
-                    if(gameState==1){
-                        estadoJogo.setText("Aguardando oponente inserir posição");
-                    }else{
-                        if (cepRecebido!=""){
-                        String subCepRecebido = cepRecebido.substring(2);
-                        cepOponente.setText(subCepRecebido);}
-
-                        if(gameState==3){
-                        estadoJogo.setText("É a sua vez");
-
-                    }else{ if(gameState==4){
-                        estadoJogo.setText("Aguardando o turno do Oponente");
-
-
-                    }
-
-                }}}
-
-            }
-        });
-
-
-    }
 
     public void conectar(View v) {
         final String ip=edtIp.getText().toString();
@@ -155,22 +96,40 @@ public class ClienteTCP extends AppCompatActivity {
                             new DataInputStream (clientSocket.getInputStream());
                     while (socketInput!=null) {
                         String result = socketInput.readUTF();
-                        if (gameState==0 || gameState==1){
+                        if (gameState==0){
                             if (result!=null) {
                                 cepRecebido = result;
-                                gameState = 4;
-                              //  atualizarCep();
+                                gameState = 2;
+
                                 atualizarStatus();
                             }
 
                         }else{
-                        if (result.compareTo("PING") == 0) {
-                            //enviar Pong
-                            pongs++;
-                            socketOutput.writeUTF("PONG");
-                            socketOutput.flush();
-                            atualizarStatus();
-                        }}
+                            if (gameState==1){
+                                if (result!=null) {
+                                    cepRecebido = result;
+                                    gameState = 4;
+
+                                    atualizarStatus();
+                                }
+
+
+                            }
+                            else{if (gameState==4){
+                                if (result.compareTo("Acertei")==0) {
+
+                                    gameState = 6;
+
+                                    atualizarStatus();
+                                }
+                                if (result.compareTo("Errei")==0){
+                                    gameState = 3;
+                                    atualizarStatus();
+                                }
+
+                            }
+                            }
+                        }
                     }
 
 
@@ -218,18 +177,33 @@ public class ClienteTCP extends AppCompatActivity {
     public void mandarCepInicial(View v){
 
         cepSalvo = cepJogador.getText().toString();
+        Log.e("Teste", "GameState antes envio cep: "+gameState);
+        Log.e("Teste", "GameState antes envio cep: "+cepSalvo);
+    if(gameState==0 || gameState==2) {
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    if (socketOutput!=null) {
+                    if (socketOutput != null) {
 
-                        socketOutput.writeUTF("CEP: "+cepSalvo);
+                        socketOutput.writeUTF(cepSalvo);
                         socketOutput.flush();
+
+                        if (gameState == 0) {
+                            gameState = 1;
+                        } else {
+                            if (gameState == 2) {
+                                gameState = 4;
+                            }
+                        }
+
+                        Log.i("Teste", "GameState envio cep: " + gameState);
+
+
                         atualizarStatus();
-                    }else{
-                        tvStatus.setText("Cliente Desconectado");
-                        btConectar.setEnabled(true);
+                    } else {
+                        //tvStatus.setText("Cliente Desconectado");
+                        // btConectar.setEnabled(true);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -237,7 +211,196 @@ public class ClienteTCP extends AppCompatActivity {
             }
         });
         t.start();
+    }
 
+    }
+
+    public void buscarCep(View v) {
+
+        if (gameState == 3) {
+
+            cepRecente = cepOponente.getText().toString();
+             String cepFinal = cepRecente + cepCorreto.getText().toString();
+
+            if (cepRecebido.compareTo(cepFinal)==0) {
+                Thread t = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if (socketOutput != null) {
+
+                                socketOutput.writeUTF("Acertei");
+                                socketOutput.flush();
+
+                                gameState = 5;
+
+                                Log.i("Teste", "GameState envio cep: " + gameState);
+
+                                atualizarStatus();
+                            } else {
+                                //tvStatus.setText("Cliente Desconectado");
+                                // btConectar.setEnabled(true);
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+                t.start();
+
+            } else {
+                Thread t = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if (socketOutput != null) {
+
+                                socketOutput.writeUTF("Errei");
+                                socketOutput.flush();
+
+                                gameState = 4;
+
+                                Log.i("Teste", "GameState envio cep: " + gameState);
+
+                                atualizarStatus();
+                            } else {
+                                //tvStatus.setText("Cliente Desconectado");
+                                // btConectar.setEnabled(true);
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+                t.start();
+            }
+        }
+    }
+    public void atualizarStatus() {
+        //Método que vai atualizar os pings e pongs, usando post para evitar problemas com as threads
+
+
+
+        Log.d("Teste", "GameState antes do post: "+gameState);
+        estadoJogo.post(new Runnable() {
+            @Override
+            public void run() {
+
+                if(gameState==0||gameState==2){
+
+                    estadoJogo.setText("Insira a posição da máquina do tempo");
+
+                }
+                else{
+
+                    if(gameState==1){
+                        estadoJogo.setText("Aguardando oponente inserir posição");
+                    }else{
+
+
+                        if(gameState==3){
+                            estadoJogo.setText("É a sua vez");
+
+                        }else{ if(gameState==4){
+                            estadoJogo.setText("Aguardando o turno do Oponente");
+
+
+                        }else{ if (gameState==5){
+                            estadoJogo.setText("Você Venceu!!!");
+
+                        }else{if (gameState==6){
+                            estadoJogo.setText("Você Perdeu :(");
+                        }
+                        }
+
+                        }
+                        }}}
+
+            }
+        });
+
+        Log.i("Teste", "GameState final atualizar: "+gameState);
+
+        if (cepRecebido!=""&&(gameState==3||gameState==4)){
+            cepCorreto.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    String subCepRecebido = cepRecebido.substring(3);
+                                    cepCorreto.setText(subCepRecebido);}
+                            }
+            );}
+
+        if (!(gameState==0||gameState==2)){
+            definirCep.post(new Runnable() {
+                @Override
+                public void run() {
+                    definirCep.setEnabled(false);
+                }
+            });
+        }
+
+        if (gameState==4){
+            if (cepRecente != ""){
+                ultimoCep.post(new Runnable(){
+                    @Override
+                    public void run(){
+                        String cepComplemento = cepCorreto.getText().toString();
+                        ultimoCep.setText("Último Cep Escolhido: " + cepRecente+cepComplemento);
+                    }
+
+                });
+            }
+            buscarCep.post(new Runnable(){
+                @Override
+                public void run(){
+                    buscarCep.setEnabled(false);
+                }
+
+            });
+        }else{if(gameState==3){
+            buscarCep.post(new Runnable(){
+                @Override
+                public void run(){
+                    buscarCep.setEnabled(true);
+                }
+
+            });} else{if(gameState==5||gameState==6){
+            buscarCep.post(new Runnable(){
+                @Override
+                public void run(){
+                    buscarCep.setEnabled(false);
+                }
+
+            });
+        }
+        }
+        }
+        if (gameState==4){
+            String cepFinal = cepOponente.getText().toString() + cepCorreto.getText().toString();
+            final int cepAtual = Integer.parseInt(cepFinal);
+            final int cepComparar = Integer.parseInt(cepRecebido);
+
+            estadoCep.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (cepAtual>cepComparar){
+                        estadoCep.setText("O Cep correto é menor que o inserido!");
+                    }
+                    else{estadoCep.setText("O Cep correto é maior que o inserido!");}
+                }
+
+
+            });} else{ if (gameState==5||gameState==6){
+
+            estadoCep.post(new Runnable() {
+                @Override
+                public void run() {
+                    estadoCep.setText("Jogo finalizado!");
+                }
+            });
+
+        }
+        }
 
 
     }

@@ -54,7 +54,7 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:inputType="textPersonName"
-        android:text="192.168.0.0"
+        android:text="192.168.0.16"
         android:textColor="#9C27B0"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -115,7 +115,6 @@
         android:layout_height="44dp"
         android:ems="10"
         android:inputType="textPersonName"
-        android:text="CEP"
         android:textColor="#9C27B0"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/btnDefinirCep"
@@ -168,6 +167,7 @@
         android:id="@+id/btnBuscarCep"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:onClick="buscarCep"
         android:text="Buscar"
         android:textColor="#9C27B0"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -203,14 +203,15 @@
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.616" />
+        app:layout_constraintVertical_bias="0.616"
+        tools:text="000" />
 
     <TextView
         android:id="@+id/tvCepCorreto"
         android:layout_width="88dp"
         android:layout_height="41dp"
         android:layout_marginEnd="4dp"
-        android:text="00-000"
+        android:text="00000"
         android:textAlignment="center"
         android:textColor="#9C27B0"
         android:textSize="24sp"
