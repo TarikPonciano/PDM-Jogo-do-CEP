@@ -13,6 +13,7 @@
         android:layout_marginStart="128dp"
         android:ems="10"
         android:inputType="textPersonName"
+        android:text="60410691"
         android:textColor="#9C27B0"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/btnDefinirCep"
@@ -69,6 +70,7 @@
         android:layout_marginBottom="52dp"
         android:text="Estado: Aguardando CEP"
         android:textColor="#9C27B0"
+        android:textSize="16sp"
         app:layout_constraintBottom_toTopOf="@+id/editCepJogador"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
@@ -80,59 +82,40 @@
         android:id="@+id/tvUltimoCep"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="40dp"
         android:text="Último CEP Escolhido:"
         android:textColor="#9C27B0"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.149"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.815" />
+        app:layout_constraintVertical_bias="0.812" />
 
     <TextView
         android:id="@+id/tvCidadeCep"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="40dp"
         android:text="Cidade:"
         android:textColor="#9C27B0"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.111"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.871" />
+        app:layout_constraintVertical_bias="0.87" />
 
     <TextView
         android:id="@+id/tvLogradouroCep"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="40dp"
         android:text="Logradouro:"
         android:textColor="#9C27B0"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.123"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.929" />
-
-    <EditText
-        android:id="@+id/editBuscarCep"
-        android:layout_width="56dp"
-        android:layout_height="57dp"
-        android:ems="10"
-        android:inputType="textShortMessage"
-        android:textAlignment="center"
-        android:textColor="#9C27B0"
-        android:textSize="24sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/tvCepCorreto"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toEndOf="@+id/advinhar"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.6" />
+        app:layout_constraintVertical_bias="0.925" />
 
     <TextView
         android:id="@+id/advinhar"
@@ -171,11 +154,27 @@
         android:textColor="#9C27B0"
         android:textSize="24sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/btnBuscarCep"
-        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.639"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.597" />
+
+    <EditText
+        android:id="@+id/editBuscarCep"
+        android:layout_width="56dp"
+        android:layout_height="57dp"
+        android:ems="10"
+        android:inputType="textShortMessage"
+        android:textAlignment="center"
+        android:textColor="#9C27B0"
+        android:textSize="24sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/tvCepCorreto"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/advinhar"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.6" />
 
     <Button
         android:id="@+id/btLigarServer"
@@ -183,13 +182,13 @@
         android:layout_height="wrap_content"
         android:onClick="ligarServidor"
         android:text="Ligar Servidor"
-        android:textColor="#3F51B5"
+        android:textColor="#9C27B0"
         android:textSize="24sp"
         app:layout_constraintBottom_toTopOf="@+id/tvEstadoJogo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.83" />
+        app:layout_constraintVertical_bias="0.733" />
 
     <TextView
         android:id="@+id/textView"
@@ -197,7 +196,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="56dp"
         android:text="Desconectado"
-        android:textColor="#3F51B5"
+        android:textColor="#9C27B0"
         android:textSize="24sp"
         app:layout_constraintBottom_toTopOf="@+id/btLigarServer"
         app:layout_constraintEnd_toEndOf="parent"

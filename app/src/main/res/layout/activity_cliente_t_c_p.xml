@@ -17,32 +17,30 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.774" />
+        app:layout_constraintVertical_bias="0.777" />
 
     <TextView
         android:id="@+id/tvLogradouroCep"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="44dp"
         android:text="Logradouro:"
         android:textColor="#9C27B0"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.144"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.892" />
+        app:layout_constraintVertical_bias="0.887" />
 
     <TextView
         android:id="@+id/tvCidadeCep"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="44dp"
         android:text="Cidade:"
         android:textColor="#9C27B0"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.131"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.834" />
@@ -67,14 +65,13 @@
         android:id="@+id/btConectar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="72dp"
         android:onClick="conectar"
         android:text="Conectar ao Server"
         android:textColor="#9C27B0"
         android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/tvStatusClient"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.51"
+        app:layout_constraintHorizontal_bias="0.525"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/edtIP" />
 
@@ -82,15 +79,16 @@
         android:id="@+id/tvStatusClient"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="180dp"
+        android:layout_marginTop="28dp"
         android:text="Desconectado"
         android:textColor="#9C27B0"
         android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/tvEstadoJogo"
+        app:layout_constraintBottom_toTopOf="@+id/btConectar"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.527"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.214" />
+        app:layout_constraintTop_toBottomOf="@+id/edtIP"
+        app:layout_constraintVertical_bias="0.0" />
 
     <EditText
         android:id="@+id/editCepJogador"
@@ -98,6 +96,7 @@
         android:layout_height="44dp"
         android:ems="10"
         android:inputType="textPersonName"
+        android:text="60410692"
         android:textColor="#9C27B0"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/btnDefinirCep"
@@ -137,7 +136,7 @@
         android:id="@+id/Advinhar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Buscar Eloi"
+        android:text="Buscar Eloi:"
         android:textColor="#9C27B0"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -167,12 +166,13 @@
         android:layout_marginBottom="30dp"
         android:text="Estado: Aguardando CEP"
         android:textColor="#9C27B0"
+        android:textSize="16sp"
         app:layout_constraintBottom_toTopOf="@+id/editCepJogador"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHorizontal_bias="0.509"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintVertical_bias="0.923" />
 
     <EditText
         android:id="@+id/editBuscarCep"

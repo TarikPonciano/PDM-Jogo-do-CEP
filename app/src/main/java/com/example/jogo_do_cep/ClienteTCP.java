@@ -9,11 +9,18 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.Socket;
+import java.net.URL;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class ClienteTCP extends AppCompatActivity {
     TextView tvStatus, tvNumPìngsPongs;
@@ -29,6 +36,7 @@ public class ClienteTCP extends AppCompatActivity {
     TextView cepCorreto, estadoCep, cidadeCep, ultimoCep, logradouroCep;
     String cepRecebido, cepRecente, cepSalvo;
     Button definirCep, buscarCep;
+    boolean iniciou = false;
 
 
     @Override
@@ -174,108 +182,226 @@ public class ClienteTCP extends AppCompatActivity {
 
     }
 
-    public void mandarCepInicial(View v){
+    public void mandarCepInicial(View v) {
 
         cepSalvo = cepJogador.getText().toString();
-        Log.e("Teste", "GameState antes envio cep: "+gameState);
-        Log.e("Teste", "GameState antes envio cep: "+cepSalvo);
-    if(gameState==0 || gameState==2) {
+
+
+
+        Log.v("Teste", "Entrou no botão");
+
+        if (gameState == 0 || gameState == 2) {
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+
+                        Log.v("Teste", "Entrou no try");
+
+                        URL url = new URL("https://viacep.com.br/ws/" + cepSalvo + "/json/");
+                        HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();//abertura da conexão TCP
+                        conn.setReadTimeout(10000);//timeout da conexão
+                        conn.setConnectTimeout(15000);//para ficar esperando
+                        conn.setRequestMethod("GET");//serviço esperando uma conexão do tipo "GET"
+
+
+                        String resposta[] = new String[1];
+                        int responseCode = conn.getResponseCode();
+                        Log.v("Teste", "Chegou até aqui 3");
+                        if(responseCode == HttpsURLConnection.HTTP_OK){
+                            Log.v("Teste", "Entrou no check de resposta");
+
+                            BufferedReader br = new BufferedReader(
+                                    new InputStreamReader(conn.getInputStream(),"utf-8")
+                            );
+                            StringBuilder response = new StringBuilder();
+                            String responseLine = null;
+                            while((responseLine = br.readLine()) != null){
+                                response.append((responseLine.trim()));
+                            }
+                            resposta[0] = response.toString();
+
+                            JSONObject respostaJSON = new JSONObject(resposta[0]);
+
+                            if (resposta[0].compareTo("{\"erro\": true}") == 0) {
+                                estadoJogo.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        estadoJogo.setText("Insira um CEP Válido");
+                                        Log.v("Teste", "Entrou no erro de CEP");
+
+                                    }
+                                });
+                            }else{
+
+                                if (socketOutput != null) {
+
+                                    socketOutput.writeUTF(cepSalvo);
+                                    socketOutput.flush();
+
+                                    if (gameState == 0) {
+                                        gameState = 1;
+                                    } else {
+                                        if (gameState == 2) {
+                                            gameState = 4;
+                                        }
+                                    }
+
+                                    Log.v("Teste", "GameState envio cep: " + gameState);
+
+                                    atualizarStatus();
+                                } else {
+                                    //tvStatus.setText("Cliente Desconectado");
+                                    // btConectar.setEnabled(true);
+                                }}}
+                        else{
+                            estadoJogo.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    estadoJogo.setText("Insira um CEP Válido");
+                                    Log.v("Teste", "Entrou no CEP Invalido");
+
+                                }
+                            });
+                        }
+                    } catch (IOException | JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            t.start();
+        }
+    }
+
+    public void buscarCep(View v) {
+
+        cepRecente = cepOponente.getText().toString();
+
+        final String cepFinal = cepRecente + cepCorreto.getText().toString();
+
+
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     if (socketOutput != null) {
 
-                        socketOutput.writeUTF(cepSalvo);
-                        socketOutput.flush();
+                        if (cepRecebido.compareTo(cepFinal)==0) {
+                            socketOutput.writeUTF("Acertei");
+                            socketOutput.flush();
 
-                        if (gameState == 0) {
-                            gameState = 1;
-                        } else {
-                            if (gameState == 2) {
-                                gameState = 4;
-                            }
-                        }
+                            gameState = 5;}
+
+                        else{socketOutput.writeUTF("Errei");
+                            socketOutput.flush();
+
+                            gameState = 4;}
 
                         Log.i("Teste", "GameState envio cep: " + gameState);
-
-
+                        iniciou=true;
                         atualizarStatus();
                     } else {
                         //tvStatus.setText("Cliente Desconectado");
                         // btConectar.setEnabled(true);
                     }
-                } catch (IOException e) {
+
+
+                    Log.v("Teste", "Entrou no try");
+
+                    URL url = new URL("https://viacep.com.br/ws/" + cepFinal + "/json/");
+                    HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();//abertura da conexão TCP
+                    conn.setReadTimeout(10000);//timeout da conexão
+                    conn.setConnectTimeout(15000);//para ficar esperando
+                    conn.setRequestMethod("GET");//serviço esperando uma conexão do tipo "GET"
+
+
+                    String resposta[] = new String[1];
+                    int responseCode = conn.getResponseCode();
+                    Log.v("Teste", "Chegou até aqui 3");
+                    if(responseCode == HttpsURLConnection.HTTP_OK){
+                        Log.v("Teste", "Entrou no check de resposta");
+
+                        BufferedReader br = new BufferedReader(
+                                new InputStreamReader(conn.getInputStream(),"utf-8")
+                        );
+                        StringBuilder response = new StringBuilder();
+                        String responseLine = null;
+                        while((responseLine = br.readLine()) != null){
+                            response.append((responseLine.trim()));
+                        }
+                        resposta[0] = response.toString();
+
+                        JSONObject respostaJSON = new JSONObject(resposta[0]);
+
+                        final String cidade = respostaJSON.getString("cidade");
+                        final String logradouro = respostaJSON.getString("logradouro");
+
+                        if (resposta[0].compareTo("{\"erro\": true}") == 0) {
+                            cidadeCep.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    cidadeCep.setText("Cidade: XXXXX");
+                                    Log.v("Teste", "Entrou no erro de CEP");
+
+                                }
+                            });
+                            logradouroCep.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    logradouroCep.setText("Logradouro: XXXXX");
+                                    Log.v("Teste", "Entrou no erro de CEP");
+
+                                }
+                            });
+                        }else{
+                            cidadeCep.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    cidadeCep.setText("Cidade: " + cidade);
+                                    Log.v("Teste", "Entrou no erro de CEP");
+
+                                }
+                            });
+                            logradouroCep.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    logradouroCep.setText("Logradouro: " + logradouro);
+                                    Log.v("Teste", "Entrou no erro de CEP");
+
+                                }
+                            });
+
+                        }}else{
+                        cidadeCep.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                cidadeCep.setText("Cidade: YYYY");
+                                Log.v("Teste", "Entrou no erro de CEP");
+
+                            }
+                        });
+                        logradouroCep.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                logradouroCep.setText("Logradouro: YYYY");
+                                Log.v("Teste", "Entrou no erro de CEP");
+
+                            }
+                        });
+
+                    }
+
+
+
+                } catch (IOException | JSONException e) {
                     e.printStackTrace();
                 }
             }
         });
         t.start();
-    }
 
     }
 
-    public void buscarCep(View v) {
-
-        if (gameState == 3) {
-
-            cepRecente = cepOponente.getText().toString();
-             String cepFinal = cepRecente + cepCorreto.getText().toString();
-
-            if (cepRecebido.compareTo(cepFinal)==0) {
-                Thread t = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            if (socketOutput != null) {
-
-                                socketOutput.writeUTF("Acertei");
-                                socketOutput.flush();
-
-                                gameState = 5;
-
-                                Log.i("Teste", "GameState envio cep: " + gameState);
-
-                                atualizarStatus();
-                            } else {
-                                //tvStatus.setText("Cliente Desconectado");
-                                // btConectar.setEnabled(true);
-                            }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-                t.start();
-
-            } else {
-                Thread t = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            if (socketOutput != null) {
-
-                                socketOutput.writeUTF("Errei");
-                                socketOutput.flush();
-
-                                gameState = 4;
-
-                                Log.i("Teste", "GameState envio cep: " + gameState);
-
-                                atualizarStatus();
-                            } else {
-                                //tvStatus.setText("Cliente Desconectado");
-                                // btConectar.setEnabled(true);
-                            }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-                t.start();
-            }
-        }
-    }
     public void atualizarStatus() {
         //Método que vai atualizar os pings e pongs, usando post para evitar problemas com as threads
 
@@ -387,7 +513,7 @@ public class ClienteTCP extends AppCompatActivity {
             });
         }
 
-        if (gameState==4){
+        if (gameState==4||gameState==5||gameState==6){
             if (cepRecente != ""){
                 ultimoCep.post(new Runnable(){
                     @Override
@@ -423,7 +549,7 @@ public class ClienteTCP extends AppCompatActivity {
         }
         }
         }
-        if (gameState==4){
+        if (gameState==4&&iniciou==true){
             String cepFinal = cepOponente.getText().toString() + cepCorreto.getText().toString();
             final int cepAtual = Integer.parseInt(cepFinal);
             final int cepComparar = Integer.parseInt(cepRecebido);
